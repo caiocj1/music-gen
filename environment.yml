@@ -1,0 +1,14 @@
+name: music-gen-env
+channels:
+  - conda-forge
+  - pytorch
+  - jmcmurray
+dependencies:
+  - numpy
+  - pytorch
+  - torchvision
+  - pytorch-lightning
+  - tensorboard
+  - matplotlib
+  - pytube
+  - os
