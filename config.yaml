@@ -1,0 +1,3 @@
+DatasetParams:
+  fs: 50
+  measures_per_img: 4

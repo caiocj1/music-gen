@@ -12,3 +12,6 @@ dependencies:
   - matplotlib
   - pytube
   - os
+  - pandas
+  - pretty_midi
+  - pyyaml
