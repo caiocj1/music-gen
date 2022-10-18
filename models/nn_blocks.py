@@ -104,6 +104,10 @@ class LocalDiscriminator(nn.Module):
             nn.BatchNorm2d(128),
             nn.ReLU(),
 
+            nn.Conv2d(128, 128, 5, stride=2, padding=2),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+
             nn.Conv2d(128, 256, 5, stride=2, padding=2),
             nn.BatchNorm2d(256),
             nn.ReLU(),
@@ -119,7 +123,7 @@ class LocalDiscriminator(nn.Module):
             nn.Flatten()
         )
 
-        self.fc = nn.Linear(8192, 512)
+        self.fc = nn.Linear(2048, 512)
 
     def forward(self, input):
         encoding = self.conv(input)
@@ -138,6 +142,10 @@ class GlobalDiscriminator(nn.Module):
             nn.ReLU(),
 
             nn.Conv2d(64, 128, 5, stride=2, padding=2),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+
+            nn.Conv2d(128, 128, 5, stride=2, padding=2),
             nn.BatchNorm2d(128),
             nn.ReLU(),
 
@@ -160,7 +168,7 @@ class GlobalDiscriminator(nn.Module):
             nn.Flatten()
         )
 
-        self.fc = nn.Linear(7168, 512)
+        self.fc = nn.Linear(2048, 512)
 
     def forward(self, input):
         encoding = self.conv(input)

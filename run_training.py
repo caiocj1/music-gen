@@ -37,8 +37,8 @@ if __name__ == '__main__':
                                  monitor='loss_val')
     lr_monitor = LearningRateMonitor()
 
-    trainer = Trainer(accelerator='cpu',
-                      #devices=1,
+    trainer = Trainer(accelerator='gpu',
+                      devices=1,
                       max_epochs=150,
                       val_check_interval=100,
                       callbacks=[model_ckpt, lr_monitor],
