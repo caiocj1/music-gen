@@ -31,26 +31,30 @@ class MusicDataset(Dataset):
 
         # READ MIDIS, GET PIANOROLLS
         i = 0
-        measure_len = 2 * self.fs
         self.data = defaultdict()
         for key in df:
             midi_path = os.path.join(dataset_path, df[key]['midi_filename'])
             midi = pretty_midi.PrettyMIDI(midi_path)
 
-            if midi.get_downbeats()[1] != 2.0 or midi.get_beats()[1] != 0.5:
-                continue
-
             piano_roll = midi.get_piano_roll(fs=self.fs)
             piano_roll = piano_roll / piano_roll.max()
 
             num_measures = piano_roll.shape[1] // midi.get_downbeats().shape[0]
+            measure_len = int(midi.get_downbeats()[1]) * self.fs
+
+            if measure_len != 100:
+                continue
 
             for j in range(num_measures//self.measures_per_img):
+                measure_img = piano_roll[:,
+                                  self.measures_per_img * measure_len * j:
+                                  self.measures_per_img * measure_len * (j + 1)]
+                if measure_img.shape != (128, self.measures_per_img * measure_len):
+                    continue
+
                 self.data[i] = df[key].copy()
+                self.data[i]['measure_img'] = measure_img
                 self.data[i]['key-order'] = key, j
-                self.data[i]['measure_img'] = piano_roll[:,
-                                              self.measures_per_img * measure_len * j:
-                                              self.measures_per_img * measure_len * (j + 1)]
 
                 mask = np.zeros((128, self.measures_per_img * measure_len))
                 mask[:, measure_len * (i % self.measures_per_img):measure_len * ((i % self.measures_per_img) + 1)] =\
