@@ -17,16 +17,16 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    train_dataset = MusicDataset(dataset=args.dataset, type='train', max_samples=10)
+    train_dataset = MusicDataset(dataset=args.dataset, type='train', max_samples=100)
     train_dataloader = DataLoader(train_dataset,
                                   batch_size=20,
-                                  num_workers=6,
+                                  num_workers=4,
                                   shuffle=True)
 
-    val_dataset = MusicDataset(dataset=args.dataset, type='validation', max_samples=2)
+    val_dataset = MusicDataset(dataset=args.dataset, type='validation', max_samples=20)
     val_dataloader = DataLoader(val_dataset,
                                 batch_size=20,
-                                num_workers=6,
+                                num_workers=4,
                                 shuffle=False)
 
     model = MelodyCompletionNet()
@@ -37,8 +37,8 @@ if __name__ == '__main__':
                                  monitor='loss_val')
     lr_monitor = LearningRateMonitor()
 
-    trainer = Trainer(accelerator='gpu',
-                      devices=1,
+    trainer = Trainer(accelerator='cpu',
+                      #devices=1,
                       max_epochs=150,
                       val_check_interval=10,
                       callbacks=[model_ckpt, lr_monitor],

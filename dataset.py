@@ -37,8 +37,6 @@ class MusicDataset(Dataset):
             midi_path = os.path.join(dataset_path, df[key]['midi_filename'])
             midi = pretty_midi.PrettyMIDI(midi_path)
 
-            print('loaded midi', key)
-
             piano_roll = midi.get_piano_roll(fs=self.fs)
             piano_roll = piano_roll / piano_roll.max()
 
@@ -57,7 +55,7 @@ class MusicDataset(Dataset):
                 self.data[i]['mask'] = mask
                 i += 1
 
-        print('finished loading dataset')
+        print(f'finished loading {self.type} dataset')
 
     def read_config(self):
         config_path = os.path.join(os.getcwd(), 'config.yaml')
