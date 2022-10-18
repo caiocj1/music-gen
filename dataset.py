@@ -37,6 +37,9 @@ class MusicDataset(Dataset):
             midi_path = os.path.join(dataset_path, df[key]['midi_filename'])
             midi = pretty_midi.PrettyMIDI(midi_path)
 
+            if midi.get_downbeats()[1] != 2.0 or midi.get_beats()[1] != 0.5:
+                continue
+
             piano_roll = midi.get_piano_roll(fs=self.fs)
             piano_roll = piano_roll / piano_roll.max()
 
