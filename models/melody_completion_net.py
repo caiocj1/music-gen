@@ -71,10 +71,12 @@ class MelodyCompletionNet(LightningModule):
 
         discr_loss = torch.log(real_is_real_prob) + torch.log(1 - gen_is_real_prob)
 
+        # loss = mse_loss + discr_loss
+
         loss = None
-        if self.trainer.current_epoch < 40:
+        if self.trainer.current_epoch < 5:
             loss = mse_loss
-        elif 40 <= self.trainer.current_epoch < 60:
+        elif 5 <= self.trainer.current_epoch < 10:
             loss = discr_loss
         else:
             loss = mse_loss + discr_loss
@@ -82,12 +84,12 @@ class MelodyCompletionNet(LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
+        optimizer = torch.optim.Adadelta(self.parameters())
+        #lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
 
         opt = {
             'optimizer': optimizer,
-            'lr_scheduler': lr_scheduler
+            #'lr_scheduler': lr_scheduler
         }
 
         return opt
