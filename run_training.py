@@ -19,13 +19,13 @@ if __name__ == '__main__':
 
     train_dataset = MusicDataset(dataset=args.dataset, type='train', max_samples=80)
     train_dataloader = DataLoader(train_dataset,
-                                  batch_size=16,
+                                  batch_size=8,
                                   num_workers=8,
                                   shuffle=True)
 
     val_dataset = MusicDataset(dataset=args.dataset, type='validation', max_samples=20)
     val_dataloader = DataLoader(val_dataset,
-                                batch_size=16,
+                                batch_size=8,
                                 num_workers=8,
                                 shuffle=False)
 
