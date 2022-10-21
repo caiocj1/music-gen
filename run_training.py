@@ -40,7 +40,7 @@ if __name__ == '__main__':
     trainer = Trainer(accelerator='gpu',
                       devices=1,
                       max_epochs=150,
-                      val_check_interval=100,
+                      val_check_interval=40,
                       callbacks=[model_ckpt, lr_monitor],
                       logger=logger)
     trainer.fit(model, train_dataloader, val_dataloader)
