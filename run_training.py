@@ -17,13 +17,13 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    train_dataset = MusicDataset(dataset=args.dataset, type='train', max_samples=80)
+    train_dataset = MusicDataset(dataset=args.dataset, type='train', max_samples=10)
     train_dataloader = DataLoader(train_dataset,
                                   batch_size=8,
                                   num_workers=8,
                                   shuffle=True)
 
-    val_dataset = MusicDataset(dataset=args.dataset, type='validation', max_samples=20)
+    val_dataset = MusicDataset(dataset=args.dataset, type='validation', max_samples=2)
     val_dataloader = DataLoader(val_dataset,
                                 batch_size=8,
                                 num_workers=8,
