@@ -85,7 +85,7 @@ class MelodyCompletionNet(LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adadelta(self.parameters())
+        optimizer = torch.optim.Adadelta(self.parameters(), lr=0.1)
         lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
 
         opt = {
