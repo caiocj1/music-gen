@@ -69,17 +69,18 @@ class MelodyCompletionNet(LightningModule):
     def calc_loss(self, batch, gen_is_real_prob, real_is_real_prob, completed_img):
         mse_loss = (batch['mask'] * (batch['measure_img'] - completed_img[:, 0]) ** 2).sum(-1).sum(-1)
 
-        discr_loss = torch.log(real_is_real_prob) + torch.log(1 - gen_is_real_prob)
+        discr_loss = torch.log(torch.clamp(real_is_real_prob, min=1e-8, max=1-1e-8)) +\
+                     torch.log(torch.clamp(1 - gen_is_real_prob, min=1e-8, max=1-1e-8))
 
-        # loss = mse_loss + discr_loss
+        loss = mse_loss + discr_loss
 
-        loss = None
-        if self.trainer.current_epoch < 5:
-            loss = mse_loss
-        elif 5 <= self.trainer.current_epoch < 10:
-            loss = discr_loss
-        else:
-            loss = mse_loss + discr_loss
+        # loss = None
+        # if self.trainer.current_epoch < 5:
+        #     loss = mse_loss
+        # elif 5 <= self.trainer.current_epoch < 10:
+        #     loss = discr_loss
+        # else:
+        #     loss = mse_loss + discr_loss
 
         return loss
 
