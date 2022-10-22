@@ -34,7 +34,8 @@ if __name__ == '__main__':
     logger = TensorBoardLogger('.', version=args.version)
     model_ckpt = ModelCheckpoint(dirpath=f'lightning_logs/{args.version}/checkpoints',
                                  save_top_k=1,
-                                 monitor='loss_val')
+                                 monitor='loss_val',
+                                 save_weights_only=True)
     lr_monitor = LearningRateMonitor()
 
     trainer = Trainer(accelerator='gpu',
