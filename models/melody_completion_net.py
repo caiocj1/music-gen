@@ -1,13 +1,21 @@
+import os
+import yaml
+from yaml.loader import SafeLoader
+
 import torch.optim
-from pytorch_lightning import LightningModule
 import torch.nn as nn
+from pytorch_lightning import LightningModule
+
 from models.nn_blocks import CompletionNetwork, LocalDiscriminator, GlobalDiscriminator
 
 class MelodyCompletionNet(LightningModule):
 
     def __init__(self):
         super(MelodyCompletionNet, self).__init__()
+        self.read_config()
+        self.build_model()
 
+    def build_model(self):
         self.completion_net = CompletionNetwork()
 
         self.local_discriminator = LocalDiscriminator()
@@ -18,6 +26,14 @@ class MelodyCompletionNet(LightningModule):
             nn.Linear(1024, 1),
             nn.Sigmoid()
         )
+
+    def read_config(self):
+        config_path = os.path.join(os.getcwd(), 'config.yaml')
+        with open(config_path) as f:
+            params = yaml.load(f, Loader=SafeLoader)
+        training_params = params['TrainingParams']
+
+        self.alpha = training_params['alpha']
 
     def training_step(self, batch, batch_idx):
         loss, metrics = self._shared_step(batch)
@@ -54,7 +70,9 @@ class MelodyCompletionNet(LightningModule):
 
         gen_local_img = completed_img[batch['mask'][:, None].bool()].reshape(batch_size, 1, 128, 100)
         gen_local_vec = self.local_discriminator(gen_local_img)
-        gen_global_vec = self.global_discriminator(completed_img)
+        #gen_global_vec = self.global_discriminator(completed_img)
+        gen_global_vec = self.global_discriminator(completed_img * batch['mask'][:, None] +
+                                                   batch['measure_img'][:, None] * (1 - batch['mask'][:, None]))
         gen_discr_vec = torch.cat((gen_local_vec, gen_global_vec), dim=1)
         gen_is_real_prob = self.discriminate(gen_discr_vec)[:, 0]
 
@@ -70,7 +88,7 @@ class MelodyCompletionNet(LightningModule):
         mse_loss = (batch['mask'] * (batch['measure_img'] - completed_img[:, 0]) ** 2).sum(-1).sum(-1)
 
         discr_loss = torch.log(torch.clamp(real_is_real_prob, min=1e-8, max=1-1e-8)) +\
-                     torch.log(torch.clamp(1 - gen_is_real_prob, min=1e-8, max=1-1e-8))
+                     self.alpha * torch.log(torch.clamp(1 - gen_is_real_prob, min=1e-8, max=1-1e-8))
 
         loss = mse_loss + discr_loss
 

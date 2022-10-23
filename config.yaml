@@ -1,3 +1,8 @@
 DatasetParams:
   fs: 50
   measures_per_img: 4
+
+TrainingParams:
+  alpha: 4e-3
+
+  only_mask_internal: False # still to test
