@@ -36,31 +36,35 @@ class MelodyCompletionNet(LightningModule):
         self.alpha = training_params['alpha']
 
     def training_step(self, batch, batch_idx):
-        loss, metrics = self._shared_step(batch)
+        loss, gen_loss, discr_loss, metrics = self._shared_step(batch)
 
         loss = loss.mean()
         self.log_metrics(metrics, 'train')
         self.log('loss_train', loss, on_step=True, on_epoch=True, logger=True)
+        self.log('gen_loss_train', gen_loss.mean(), on_step=True, on_epoch=True, logger=True)
+        self.log('discr_loss_train', discr_loss.mean(), on_step=True, on_epoch=True, logger=True)
 
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, metrics = self._shared_step(batch)
+        loss, gen_loss, discr_loss, metrics = self._shared_step(batch)
 
         loss = loss.mean()
         self.log_metrics(metrics, 'val')
         self.log('loss_val', loss, on_step=False, on_epoch=True, logger=True)
+        self.log('gen_loss_val', gen_loss.mean(), on_step=True, on_epoch=True, logger=True)
+        self.log('discr_loss_val', discr_loss.mean(), on_step=True, on_epoch=True, logger=True)
 
         return loss
 
     def _shared_step(self, batch):
         gen_is_real_prob, real_is_real_prob, completed_img = self.forward(batch)
 
-        loss = self.calc_loss(batch, gen_is_real_prob, real_is_real_prob, completed_img)
+        loss, gen_loss, discr_loss = self.calc_loss(batch, gen_is_real_prob, real_is_real_prob, completed_img)
 
         metrics = self.calc_metrics()
 
-        return loss, metrics
+        return loss, gen_loss, discr_loss, metrics
 
     def forward(self, batch):
         masked_input = torch.stack((batch['measure_img'] * (1 - batch['mask']), batch['mask']), dim=1).float()
@@ -100,7 +104,7 @@ class MelodyCompletionNet(LightningModule):
         # else:
         #     loss = mse_loss + discr_loss
 
-        return loss
+        return loss, mse_loss, discr_loss
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adadelta(self.parameters(), lr=0.1)
