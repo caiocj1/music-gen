@@ -71,8 +71,8 @@ class MelodyCompletionNet(LightningModule):
         gen_local_img = completed_img[batch['mask'][:, None].bool()].reshape(batch_size, 1, 128, 100)
         gen_local_vec = self.local_discriminator(gen_local_img)
         #gen_global_vec = self.global_discriminator(completed_img)
-        gen_global_vec = self.global_discriminator(completed_img * batch['mask'][:, None] +
-                                                   batch['measure_img'][:, None] * (1 - batch['mask'][:, None]))
+        gen_global_vec = self.global_discriminator((completed_img * batch['mask'][:, None] +
+                                                   batch['measure_img'][:, None] * (1 - batch['mask'][:, None])).float())
         gen_discr_vec = torch.cat((gen_local_vec, gen_global_vec), dim=1)
         gen_is_real_prob = self.discriminate(gen_discr_vec)[:, 0]
 
