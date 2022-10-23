@@ -94,15 +94,15 @@ class MelodyCompletionNet(LightningModule):
         discr_loss = torch.log(torch.clamp(real_is_real_prob, min=1e-8, max=1-1e-8)) +\
                      self.alpha * torch.log(torch.clamp(1 - gen_is_real_prob, min=1e-8, max=1-1e-8))
 
-        # loss = mse_loss + discr_loss
+        loss = mse_loss - discr_loss
 
-        loss = None
-        if self.trainer.current_epoch < 10:
-            loss = mse_loss
-        elif 10 <= self.trainer.current_epoch < 20:
-            loss = discr_loss
-        else:
-            loss = mse_loss + discr_loss
+        # loss = None
+        # if self.trainer.current_epoch < 10:
+        #     loss = mse_loss
+        # elif 10 <= self.trainer.current_epoch < 20:
+        #     loss = discr_loss
+        # else:
+        #     loss = mse_loss + discr_loss
 
         return loss, mse_loss, discr_loss
 
