@@ -3,6 +3,6 @@ DatasetParams:
   measures_per_img: 4
 
 TrainingParams:
-  alpha: 4e-3
+  alpha: 0.0004
 
   only_mask_internal: False # still to test
