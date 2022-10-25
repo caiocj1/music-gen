@@ -124,15 +124,11 @@ class MelodyCompletionNet(LightningModule):
     def configure_optimizers(self):
         g_optimizer = torch.optim.Adadelta(self.parameters(), lr=0.1)
         d_optimizer = torch.optim.Adadelta(self.parameters(), lr=0.1, maximize=True)
-        #lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(g_optimizer, gamma=0.98)
 
-        # opt = {
-        #     'optimizer': [g_optimizer, d_optimizer],
-        #     'state': []
-        #     #'lr_scheduler': lr_scheduler
-        # }
+        g_lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(g_optimizer, T_max=40)
+        d_lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(d_optimizer, T_max=40)
 
-        return g_optimizer, d_optimizer
+        return [g_optimizer, d_optimizer], [g_lr_scheduler, d_lr_scheduler]
 
     def calc_metrics(self):
         metrics = {}
