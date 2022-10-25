@@ -60,7 +60,7 @@ class MelodyCompletionNet(LightningModule):
         batch_size = len(self.completed_img)
         for i in range(batch_size):
             idx = batch_size * batch_idx + i
-            if idx % 10 == 0:
+            if idx % 50 == 0:
                 fig = plot_generated(batch, self.completed_img, None, None, i)
                 img_tensor = torchvision.transforms.ToTensor()(fig)
                 self.logger.experiment.add_image(f'generated_imgs/img_{idx}', img_tensor, self.global_step)
@@ -78,8 +78,8 @@ class MelodyCompletionNet(LightningModule):
 
         # train discriminator
         if optimizer_idx == 1:
-            gen_is_real_prob, real_is_real_prob = self.discr_forward(batch, self.completed_img)
-            loss = self.calc_d_loss(gen_is_real_prob.detach(), real_is_real_prob)
+            gen_is_real_prob, real_is_real_prob = self.discr_forward(batch, self.completed_img.detach())
+            loss = self.calc_d_loss(gen_is_real_prob, real_is_real_prob)
             training_who = 'd'
 
         metrics = self.calc_metrics()

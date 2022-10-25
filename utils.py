@@ -30,7 +30,7 @@ def plot_generated(batch, completed_img, gen_is_real_prob, real_is_real_prob, id
         return fig
 
     buf = io.BytesIO()
-    fig.savefig(buf, dpi=1000)
+    fig.savefig(buf, dpi=500)
     buf.seek(0)
     img = Image.open(buf)
     plt.close(fig)
