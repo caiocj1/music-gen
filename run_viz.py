@@ -2,6 +2,7 @@ import argparse
 
 from models.melody_completion_net import MelodyCompletionNet
 from dataset import MusicDataset
+from utils import plot_generated
 
 import torch
 from torch.utils.data import DataLoader
@@ -30,22 +31,25 @@ if __name__ == '__main__':
 
     for _, batch in enumerate(eval_dataloader):
         print(_, '/', len(eval_dataloader))
-        gen_is_real_prob, real_is_real_prob, completed_img = model(batch)
+        completed_img = model(batch)
 
-        fig, axs = plt.subplots(4)
-        fig.set_size_inches(8, 16)
-        fontdict = {'fontsize': 10}
-        axs[0].set_title('Real image', fontdict=fontdict)
-        axs[0].imshow(batch['measure_img'][0].cpu().detach().numpy())
-        axs[0].axis('off')
-        axs[1].set_title('Masked image: generator input', fontdict=fontdict)
-        axs[1].imshow((batch['measure_img'][0] * (1 - batch['mask'][0])).cpu().detach().numpy())
-        axs[1].axis('off')
-        axs[2].set_title('Completed image: whole', fontdict=fontdict)
-        axs[2].imshow(completed_img[0, 0].cpu().detach().numpy())
-        axs[2].axis('off')
-        axs[3].set_title('Completed image: discriminator input', fontdict=fontdict)
-        axs[3].imshow((completed_img[0, 0] * batch['mask'][0] + batch['measure_img'][0] * (1 - batch['mask'][0])).cpu().detach().numpy())
-        axs[3].annotate('[{:.4f} {:.4f}]'.format(gen_is_real_prob.item(), real_is_real_prob.item()), (10, 14))
-        axs[3].axis('off')
+        # fig, axs = plt.subplots(4)
+        # fig.set_size_inches(8, 16)
+        # fontdict = {'fontsize': 10}
+        # axs[0].set_title('Real image', fontdict=fontdict)
+        # axs[0].imshow(batch['measure_img'][0].cpu().detach().numpy())
+        # axs[0].axis('off')
+        # axs[1].set_title('Masked image: generator input', fontdict=fontdict)
+        # axs[1].imshow((batch['measure_img'][0] * (1 - batch['mask'][0])).cpu().detach().numpy())
+        # axs[1].axis('off')
+        # axs[2].set_title('Completed image: whole', fontdict=fontdict)
+        # axs[2].imshow(completed_img[0, 0].cpu().detach().numpy())
+        # axs[2].axis('off')
+        # axs[3].set_title('Completed image: discriminator input', fontdict=fontdict)
+        # axs[3].imshow((completed_img[0, 0] * batch['mask'][0] + batch['measure_img'][0] * (1 - batch['mask'][0])).cpu().detach().numpy())
+        # axs[3].annotate('[{:.4f} {:.4f}]'.format(gen_is_real_prob.item(), real_is_real_prob.item()), (10, 14))
+        # axs[3].axis('off')
+
+        fig = plot_generated(batch, completed_img, None, None, 0, plt_figure=True)
         plt.show()
+        plt.close(fig)
