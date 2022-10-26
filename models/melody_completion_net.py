@@ -24,14 +24,16 @@ class MelodyCompletionNet(LightningModule):
     def build_model(self):
         self.completion_net = CompletionNetwork()
 
-        self.local_discriminator = LocalDiscriminator()
+        self.local_discriminator = LocalDiscriminator(dropout=self.dropout)
 
-        self.global_discriminator = GlobalDiscriminator()
+        self.global_discriminator = GlobalDiscriminator(dropout=self.dropout)
 
         self.discriminate = nn.Sequential(
             nn.Linear(1024, 1),
             nn.Sigmoid()
         )
+    
+        self.dropout_layer = nn.Dropout()
 
     def read_config(self):
         config_path = os.path.join(os.getcwd(), 'config.yaml')
@@ -40,6 +42,9 @@ class MelodyCompletionNet(LightningModule):
         training_params = params['TrainingParams']
 
         self.alpha = training_params['alpha']
+        self.beta = training_params['beta']
+
+        self.dropout = training_params['dropout']
 
     def training_step(self, batch, batch_idx, optimizer_idx):
         loss, training_who, metrics = self._shared_step(batch, optimizer_idx)
@@ -102,12 +107,18 @@ class MelodyCompletionNet(LightningModule):
                                                     batch['measure_img'][:, None] * (
                                                                 1 - batch['mask'][:, None])).float())
         gen_discr_vec = torch.cat((gen_local_vec, gen_global_vec), dim=1)
+
+        if self.dropout:
+            gen_discr_vec = self.dropout_layer(gen_discr_vec)
         gen_is_real_prob = self.discriminate(gen_discr_vec)[:, 0]
 
         real_local_img = batch['measure_img'][batch['mask'].bool()].reshape(batch_size, 1, 128, 100).float()
         real_local_vec = self.local_discriminator(real_local_img)
         real_global_vec = self.global_discriminator(batch['measure_img'][:, None].float())
         real_discr_vec = torch.cat((real_local_vec, real_global_vec), dim=1)
+
+        if self.dropout:
+            gen_discr_vec = self.dropout_layer(real_discr_vec)
         real_is_real_prob = self.discriminate(real_discr_vec)[:, 0]
 
         return gen_is_real_prob, real_is_real_prob
@@ -117,8 +128,9 @@ class MelodyCompletionNet(LightningModule):
         return g_loss
 
     def calc_d_loss(self, gen_is_real_prob, real_is_real_prob):
-        d_loss = (torch.log(torch.clamp(real_is_real_prob, min=1e-8, max=1 - 1e-8)) + \
-                      self.alpha * torch.log(torch.clamp(1 - gen_is_real_prob, min=1e-8, max=1 - 1e-8)))
+        d_loss = (1 - self.beta) * (torch.log(torch.clamp(real_is_real_prob, min=1e-8, max=1 - 1e-8))) +\
+                    self.beta * (1 - torch.log(torch.clamp(real_is_real_prob, min=1e-8, max=1 - 1e-8))) +\
+                      self.alpha * torch.log(torch.clamp(1 - gen_is_real_prob, min=1e-8, max=1 - 1e-8))
         return d_loss
 
     def configure_optimizers(self):

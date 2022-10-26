@@ -92,7 +92,7 @@ class CompletionNetwork(nn.Module):
 
 
 class LocalDiscriminator(nn.Module):
-    def __init__(self):
+    def __init__(self, dropout: bool = False):
         super(LocalDiscriminator, self).__init__()
 
         self.conv = nn.Sequential(
@@ -125,15 +125,20 @@ class LocalDiscriminator(nn.Module):
 
         self.fc = nn.Linear(2048, 512)
 
+        if dropout:
+            self.dropout = nn.Dropout()
+
     def forward(self, input):
         encoding = self.conv(input)
+        if hasattr(self, 'dropout'):
+            encoding = self.dropout(encoding)
         local_vec = self.fc(encoding)
 
         return local_vec
 
 
 class GlobalDiscriminator(nn.Module):
-    def __init__(self):
+    def __init__(self, dropout: bool = False):
         super(GlobalDiscriminator, self).__init__()
 
         self.conv = nn.Sequential(
@@ -170,8 +175,13 @@ class GlobalDiscriminator(nn.Module):
 
         self.fc = nn.Linear(2048, 512)
 
+        if dropout:
+            self.dropout = nn.Dropout()
+
     def forward(self, input):
         encoding = self.conv(input)
+        if hasattr(self, 'dropout'):
+            encoding = self.dropout(encoding)
         local_vec = self.fc(encoding)
 
         return local_vec
