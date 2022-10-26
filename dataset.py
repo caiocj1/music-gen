@@ -52,6 +52,9 @@ class MusicDataset(Dataset):
                 if measure_img.shape != (128, self.measures_per_img * measure_len):
                     continue
 
+                # comment if intermediate values allowed
+                measure_img = (measure_img > 0).astype(float)
+
                 self.data[i] = df[key].copy()
                 self.data[i]['measure_img'] = measure_img
                 self.data[i]['key-order'] = key, j
