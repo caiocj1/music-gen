@@ -32,7 +32,7 @@ class MelodyCompletionNet(LightningModule):
             nn.Linear(1024, 1),
             nn.Sigmoid()
         )
-    
+
         self.dropout_layer = nn.Dropout()
 
     def read_config(self):
@@ -129,7 +129,7 @@ class MelodyCompletionNet(LightningModule):
 
     def calc_d_loss(self, gen_is_real_prob, real_is_real_prob):
         d_loss = (1 - self.beta) * (torch.log(torch.clamp(real_is_real_prob, min=1e-8, max=1 - 1e-8))) +\
-                    self.beta * (1 - torch.log(torch.clamp(real_is_real_prob, min=1e-8, max=1 - 1e-8))) +\
+                       self.beta * torch.log(torch.clamp(1 - real_is_real_prob, min=1e-8, max=1 - 1e-8)) +\
                       self.alpha * torch.log(torch.clamp(1 - gen_is_real_prob, min=1e-8, max=1 - 1e-8))
         return d_loss
 
