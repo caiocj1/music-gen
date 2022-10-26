@@ -56,10 +56,12 @@ class MusicDataset(Dataset):
                 self.data[i]['measure_img'] = measure_img
                 self.data[i]['key-order'] = key, j
 
-                mask = np.zeros((128, self.measures_per_img * measure_len))
-                mask[:, measure_len * (i % self.measures_per_img):measure_len * ((i % self.measures_per_img) + 1)] =\
-                    np.ones((128, measure_len))
-                self.data[i]['mask'] = mask
+                # mask_idx = np.random.randint(0, self.measures_per_img)
+                # mask = np.zeros((128, self.measures_per_img * measure_len))
+                # mask[:, measure_len * mask_idx:measure_len * (mask_idx + 1)] = \
+                #     np.ones((128, measure_len))
+                # self.data[i]['mask'] = mask
+
                 i += 1
 
         print(f'finished loading {self.type} dataset')
@@ -74,7 +76,14 @@ class MusicDataset(Dataset):
         self.measures_per_img = dataset_params['measures_per_img']
 
     def __getitem__(self, item):
-        return self.data[item]
+        sample = self.data[item]
+
+        mask_idx = np.random.randint(0, self.measures_per_img)
+        mask = np.zeros((128, self.measures_per_img * 100))
+        mask[:, 100 * mask_idx:100 * (mask_idx + 1)] = np.ones((128, 100))
+        sample['mask'] = mask
+
+        return sample
 
     def __len__(self):
         return len(self.data)

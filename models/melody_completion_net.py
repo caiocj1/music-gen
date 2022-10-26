@@ -47,7 +47,7 @@ class MelodyCompletionNet(LightningModule):
         self.dropout = training_params['dropout']
 
     def training_step(self, batch, batch_idx, optimizer_idx):
-        loss, training_who, metrics = self._shared_step(batch, optimizer_idx)
+        loss, training_who, metrics, probs = self._shared_step(batch, optimizer_idx)
 
         loss = loss.mean()
         self.log_metrics(metrics, 'train')
@@ -56,7 +56,7 @@ class MelodyCompletionNet(LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, training_who, metrics = self._shared_step(batch, 0)
+        loss, training_who, metrics, probs = self._shared_step(batch, 0)
 
         loss = loss.mean()
         self.log_metrics(metrics, 'val')
@@ -66,7 +66,7 @@ class MelodyCompletionNet(LightningModule):
         for i in range(batch_size):
             idx = batch_size * batch_idx + i
             if idx % 50 == 0:
-                fig = plot_generated(batch, self.completed_img, None, None, i)
+                fig = plot_generated(batch, self.completed_img, probs[0], probs[1], i)
                 img_tensor = torchvision.transforms.ToTensor()(fig)
                 self.logger.experiment.add_image(f'generated_imgs/img_{idx}', img_tensor, self.global_step)
 
@@ -75,11 +75,14 @@ class MelodyCompletionNet(LightningModule):
     def _shared_step(self, batch, optimizer_idx):
         loss = None
         training_who = 'g'
+        probs = None
 
         # train generator
         if optimizer_idx == 0:
             self.completed_img = self.forward(batch)
             loss = self.calc_g_loss(batch, self.completed_img)
+            # get probabilities for logging only
+            probs = self.discr_forward(batch, self.completed_img.detach())
 
         # train discriminator
         if optimizer_idx == 1:
@@ -89,7 +92,7 @@ class MelodyCompletionNet(LightningModule):
 
         metrics = self.calc_metrics()
 
-        return loss, training_who, metrics
+        return loss, training_who, metrics, probs
 
     def forward(self, batch):
         masked_input = torch.stack((batch['measure_img'] * (1 - batch['mask']), batch['mask']), dim=1).float()
@@ -128,7 +131,7 @@ class MelodyCompletionNet(LightningModule):
         return g_loss
 
     def calc_d_loss(self, gen_is_real_prob, real_is_real_prob):
-        d_loss = (1 - self.beta) * (torch.log(torch.clamp(real_is_real_prob, min=1e-8, max=1 - 1e-8))) +\
+        d_loss = (1 - self.beta) * torch.log(torch.clamp(real_is_real_prob, min=1e-8, max=1 - 1e-8)) +\
                        self.beta * torch.log(torch.clamp(1 - real_is_real_prob, min=1e-8, max=1 - 1e-8)) +\
                       self.alpha * torch.log(torch.clamp(1 - gen_is_real_prob, min=1e-8, max=1 - 1e-8))
         return d_loss

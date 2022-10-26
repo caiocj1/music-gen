@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import io
 
+
 def plot_generated(batch, completed_img, gen_is_real_prob, real_is_real_prob, idx, plt_figure = False):
     fig, axs = plt.subplots(4)
     fig.set_size_inches(5.5, 8)
@@ -21,7 +22,7 @@ def plot_generated(batch, completed_img, gen_is_real_prob, real_is_real_prob, id
     axs[3].imshow((completed_img[idx, 0] * batch['mask'][idx] + batch['measure_img'][idx] * (
                 1 - batch['mask'][idx])).cpu().detach().numpy())
     if gen_is_real_prob is not None and real_is_real_prob is not None:
-        axs[3].annotate('[{:.4f} {:.4f}]'.format(gen_is_real_prob.item(), real_is_real_prob.item()), (10, 14))
+        axs[3].annotate('[{:.4f} {:.4f}]'.format(gen_is_real_prob[idx].item(), real_is_real_prob[idx].item()), (10, 16))
     axs[3].axis('off')
 
     # pil_img = PIL.Image.frombytes('RGB', fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
