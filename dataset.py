@@ -53,7 +53,7 @@ class MusicDataset(Dataset):
                     continue
 
                 # comment if intermediate values allowed
-                measure_img = (measure_img > 0).astype(float)
+                #measure_img = (measure_img > 0).astype(float)
 
                 self.data[i] = df[key].copy()
                 self.data[i]['measure_img'] = measure_img
